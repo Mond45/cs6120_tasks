@@ -1,0 +1,44 @@
+@no_label {
+    a: int = const 0;
+    b: int = const 1;
+    a: int = add a b;
+    print a;
+}
+
+@all_unused {
+.label0:
+    a: int = const 0;
+.label1:
+    b: int = const 1;
+    a: int = add a b;
+.label0:
+    print a;
+}
+
+@some_used {
+.unused:
+    i: int = const 0;
+    n: int = const 5;
+.while_start:
+    cond: bool = lt i n;
+    br cond .while_body .while_end;
+.while_body:
+    nop;
+    jmp while_start;
+.while_end:
+    nop;
+}
+
+@all_used: int {
+    call @no_label;
+    i: int = const 0;
+    n: int = const 5;
+.while_start:
+    cond: bool = lt i n;
+    br cond .while_body .while_end;
+.while_body:
+    nop;
+    jmp while_start;
+.while_end:
+    ret i;
+}
