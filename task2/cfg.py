@@ -40,5 +40,9 @@ if __name__ == "__main__":
             elif i < len(fn_blocks) - 1:
                 cfg[fn_name][i] = {i + 1}
 
-    pprint([list(enumerate(fb)) for fb in fn_basic_blocks])
-    pprint(cfg)
+    for fn, fn_cfg in sorted(cfg.items()):
+        print(fn)
+        for block, successors in sorted(fn_cfg.items()):
+            successors = ", ".join([str(e) for e in sorted(successors)])
+            print(f"{block}: {successors}")
+        print()
