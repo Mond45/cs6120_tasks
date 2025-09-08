@@ -1,0 +1,21 @@
+[{'args': ['a', 'b'], 'dest': 'cond', 'op': 'gt', 'type': 'bool'}, {'args': ['cond'], 'labels': ['t', 'f'], 'op': 'br'}]
+[{'label': 't'}, {'args': ['a'], 'op': 'ret'}]
+[{'label': 'f'}, {'args': ['b'], 'op': 'ret'}]
+
+[{'dest': 'zero', 'op': 'const', 'type': 'int', 'value': 0}, {'dest': 'one', 'op': 'const', 'type': 'int', 'value': 1}, {'dest': 'size', 'op': 'const', 'type': 'int', 'value': 8}, {'args': ['size'], 'dest': 'dp', 'op': 'alloc', 'type': {'ptr': 'int'}}, {'dest': 'i', 'op': 'const', 'type': 'int', 'value': 0}]
+[{'label': 'checkInit'}, {'args': ['i', 'size'], 'dest': 'cond', 'op': 'lt', 'type': 'bool'}, {'args': ['cond'], 'labels': ['bodyInit', 'doneInit'], 'op': 'br'}]
+[{'label': 'bodyInit'}, {'args': ['dp', 'i'], 'dest': 'elem', 'op': 'ptradd', 'type': {'ptr': 'int'}}, {'args': ['elem', 'one'], 'op': 'store'}, {'args': ['i', 'one'], 'dest': 'i', 'op': 'add', 'type': 'int'}, {'labels': ['checkInit'], 'op': 'jmp'}]
+[{'label': 'doneInit'}, {'dest': 'i', 'op': 'const', 'type': 'int', 'value': 0}]
+[{'label': 'checkOuter'}, {'args': ['i', 'size'], 'dest': 'cond', 'op': 'lt', 'type': 'bool'}, {'args': ['cond'], 'labels': ['bodyOuter', 'doneOuter'], 'op': 'br'}]
+[{'label': 'bodyOuter'}, {'dest': 'j', 'op': 'const', 'type': 'int', 'value': 0}]
+[{'label': 'checkInner'}, {'args': ['j', 'i'], 'dest': 'cond', 'op': 'lt', 'type': 'bool'}, {'args': ['cond'], 'labels': ['bodyInner', 'doneInner'], 'op': 'br'}]
+[{'label': 'bodyInner'}, {'args': ['arr', 'i'], 'dest': 'ptr_i', 'op': 'ptradd', 'type': {'ptr': 'int'}}, {'args': ['arr', 'j'], 'dest': 'ptr_j', 'op': 'ptradd', 'type': {'ptr': 'int'}}, {'args': ['ptr_i'], 'dest': 'val_i', 'op': 'load', 'type': 'int'}, {'args': ['ptr_j'], 'dest': 'val_j', 'op': 'load', 'type': 'int'}, {'args': ['val_j', 'val_i'], 'dest': 'cond', 'op': 'lt', 'type': 'bool'}, {'args': ['cond'], 'labels': ['i_lt_j', 'endif'], 'op': 'br'}]
+[{'label': 'i_lt_j'}, {'args': ['dp', 'i'], 'dest': 'ptr_i', 'op': 'ptradd', 'type': {'ptr': 'int'}}, {'args': ['dp', 'j'], 'dest': 'ptr_j', 'op': 'ptradd', 'type': {'ptr': 'int'}}, {'args': ['ptr_i'], 'dest': 'val_i', 'op': 'load', 'type': 'int'}, {'args': ['ptr_j'], 'dest': 'val_j', 'op': 'load', 'type': 'int'}, {'args': ['val_j', 'one'], 'dest': 'val_j', 'op': 'add', 'type': 'int'}, {'args': ['val_i', 'val_j'], 'dest': 'val', 'funcs': ['max'], 'op': 'call', 'type': 'int'}, {'args': ['ptr_i', 'val'], 'op': 'store'}]
+[{'label': 'endif'}, {'args': ['j', 'one'], 'dest': 'j', 'op': 'add', 'type': 'int'}, {'labels': ['checkInner'], 'op': 'jmp'}]
+[{'label': 'doneInner'}, {'args': ['i', 'one'], 'dest': 'i', 'op': 'add', 'type': 'int'}, {'labels': ['checkOuter'], 'op': 'jmp'}]
+[{'label': 'doneOuter'}, {'dest': 'i', 'op': 'const', 'type': 'int', 'value': 0}, {'dest': 'ans', 'op': 'const', 'type': 'int', 'value': 1}]
+[{'label': 'checkAns'}, {'args': ['i', 'size'], 'dest': 'cond', 'op': 'lt', 'type': 'bool'}, {'args': ['cond'], 'labels': ['bodyAns', 'doneAns'], 'op': 'br'}]
+[{'label': 'bodyAns'}, {'args': ['dp', 'i'], 'dest': 'ptr_i', 'op': 'ptradd', 'type': {'ptr': 'int'}}, {'args': ['ptr_i'], 'dest': 'val_i', 'op': 'load', 'type': 'int'}, {'args': ['ans', 'val_i'], 'dest': 'ans', 'funcs': ['max'], 'op': 'call', 'type': 'int'}, {'args': ['i', 'one'], 'dest': 'i', 'op': 'add', 'type': 'int'}, {'labels': ['checkAns'], 'op': 'jmp'}]
+[{'label': 'doneAns'}, {'args': ['dp'], 'op': 'free'}, {'args': ['ans'], 'op': 'ret'}]
+
+
