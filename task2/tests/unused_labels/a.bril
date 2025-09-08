@@ -24,7 +24,7 @@
     br cond .while_body .while_end;
 .while_body:
     nop;
-    jmp while_start;
+    jmp .while_start;
 .while_end:
     nop;
 }
@@ -38,7 +38,7 @@
     br cond .while_body .while_end;
 .while_body:
     nop;
-    jmp while_start;
+    jmp .while_start;
 .while_end:
     ret i;
 }

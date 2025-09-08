@@ -10,10 +10,8 @@ def get_labels(instrs):
 
 def get_used_labels(instrs):
     for instr in instrs:
-        if "op" in instr and instr["op"] == "br":
+        if "op" in instr and instr["op"] in ("br", "jmp"):
             yield from instr["labels"]
-        elif "op" in instr and instr["op"] == "jmp":
-            yield instr["args"][0]
 
 
 if __name__ == "__main__":
@@ -26,5 +24,5 @@ if __name__ == "__main__":
         [set(get_labels(instrs)) for instrs in fn_instrs],
         [set(get_used_labels(instrs)) for instrs in fn_instrs],
     ):
-        unused_labels = ", ".join(labels - used_labels)
+        unused_labels = ", ".join(sorted(labels - used_labels))
         print(f'{function["name"]}: {unused_labels}')
