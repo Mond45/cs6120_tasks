@@ -48,14 +48,14 @@ pub fn global_dce_pass(function: &mut Function) -> bool {
     changing
 }
 
-pub fn get_basic_blocks(instrs: &Vec<Code>) -> Vec<Vec<Code>> {
+pub fn get_basic_blocks(function: &Function) -> Vec<Vec<Code>> {
     let mut basic_blocks = Vec::new();
 
     let mut current_block: Vec<Code> = Vec::new();
-    for code in instrs.iter() {
+    for code in function.instrs.iter() {
         match code {
             Code::Label { .. } => {
-                if current_block.len() > 0 {
+                if !current_block.is_empty() {
                     basic_blocks.push(current_block);
                 }
                 current_block = vec![code.clone()];
@@ -75,5 +75,17 @@ pub fn get_basic_blocks(instrs: &Vec<Code>) -> Vec<Vec<Code>> {
         }
     }
 
+    if !current_block.is_empty() {
+        basic_blocks.push(current_block);
+    }
+
     basic_blocks
+}
+
+pub fn print_block(block: &Vec<Code>) {
+    println!("```");
+    for code in block {
+        println!("{code}");
+    }
+    println!("```");
 }

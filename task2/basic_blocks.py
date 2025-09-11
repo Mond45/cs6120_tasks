@@ -16,6 +16,8 @@ def get_basic_blocks(instrs):
             current = []
         else:
             current.append(instr)
+    if current:
+        yield current
 
 
 if __name__ == "__main__":
