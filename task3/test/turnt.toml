@@ -1,0 +1,1 @@
+command = "bril2json < {filename} | ../target/release/dce | bril2txt"
