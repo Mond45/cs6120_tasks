@@ -3,7 +3,7 @@ use bril_rs::{Code, EffectOps, Function, Instruction};
 pub mod dce;
 pub mod lvn;
 
-fn flatten(blocks: Vec<Vec<Code>>) -> Vec<Code> {
+pub fn flatten(blocks: Vec<Vec<Code>>) -> Vec<Code> {
     let mut instrs = Vec::new();
     for block in blocks {
         instrs.extend(block);
