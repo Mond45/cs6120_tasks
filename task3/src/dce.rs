@@ -4,8 +4,7 @@ use std::collections::{HashMap, HashSet};
 use bril_rs::{Code, Function, Instruction};
 
 fn locally_killed_block(block: &mut Vec<Code>) -> bool {
-    let mut changing = false;
-
+    let original_len = block.len();
     let mut drop_indices = Vec::new();
     // var -> index
     let mut last_assignment = HashMap::new();
@@ -41,14 +40,11 @@ fn locally_killed_block(block: &mut Vec<Code>) -> bool {
     let mut i: usize = 0;
     block.retain(|_| {
         let keep = !drop_indices.contains(&&i);
-        if !keep {
-            changing = true;
-        }
         i += 1;
         keep
     });
 
-    changing
+    block.len() != original_len
 }
 
 pub fn locally_killed_pass(function: &mut Function) -> bool {
@@ -65,7 +61,7 @@ pub fn locally_killed_pass(function: &mut Function) -> bool {
 }
 
 pub fn global_dce_pass(function: &mut Function) -> bool {
-    let mut changing = false;
+    let original_len = function.instrs.len();
     let mut used = HashSet::new();
 
     for code in function.instrs.iter() {
@@ -82,7 +78,6 @@ pub fn global_dce_pass(function: &mut Function) -> bool {
                 if used.contains(dest) {
                     return true;
                 } else {
-                    changing = true;
                     return false;
                 }
             }
@@ -90,5 +85,5 @@ pub fn global_dce_pass(function: &mut Function) -> bool {
         return true;
     });
 
-    changing
+    function.instrs.len() != original_len
 }
