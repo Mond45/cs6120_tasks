@@ -11,6 +11,6 @@ pipeline = [
 [runs.myopt]
 pipeline = [
     "bril2json",
-    "./target/release/lvn",
+    "./target/release/lvn -f",
     "brili -p {args}",
 ]

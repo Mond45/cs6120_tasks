@@ -1,0 +1,10 @@
+# CMD: bril2json < {filename} | ../../target/release/lvn -f | ../../target/release/dce | bril2txt
+@main {
+  v1: int = const 4;
+  v2: int = const 0;
+  mul1: int = mul v1 v2;
+  add1: int = add v1 v2;
+  v2: int = const 3;
+  print mul1;
+  print add1;
+}
