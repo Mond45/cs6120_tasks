@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use bril_rs::{Code, EffectOps, Function, Instruction};
 
@@ -98,72 +98,64 @@ pub fn get_basic_blocks(function: &Function) -> Vec<Vec<Code>> {
     basic_blocks
 }
 
-fn merge(ins: &Vec<&HashSet<String>>) -> HashSet<String> {
-    let mut merged = HashSet::new();
-    // TODO: implement merge: union
-    for i in ins {
-        merged.extend(i.iter().cloned());
-    }
-    merged
-}
+pub trait DataFlowAnalysis {
+    const FORWARD: bool;
+    type State: Clone + PartialEq;
 
-fn transfer(block: &Vec<Code>, out: &HashSet<String>) -> HashSet<String> {
-    // TODO: implement transfer function
-    // find used, killed variables, returns use union (out - kill)
+    fn merge(inputs: &Vec<&Self::State>) -> Self::State;
+    fn transfer(block: &Vec<Code>, input: &Self::State) -> Self::State;
+    fn inital_state() -> Self::State;
+    fn workman(
+        blocks: &Vec<Vec<Code>>,
+        pred: &HashMap<usize, Vec<usize>>,
+        succ: &HashMap<usize, Vec<usize>>,
+    ) -> Vec<Self::State> {
+        let mut in_: Vec<Self::State> = vec![Self::inital_state(); blocks.len()];
+        let mut out: Vec<Self::State> = vec![Self::inital_state(); blocks.len()];
+        let mut worklist: Vec<_> = (0..blocks.len()).collect();
 
-    let mut used = HashSet::new();
-    let mut def = HashSet::new();
+        while !worklist.is_empty() {
+            let b = worklist.pop().expect("worklist shouldn't be empty");
 
-    for code in block {
-        if let Code::Instruction(instr) = code {
-            match instr {
-                Instruction::Constant { dest, .. } => {
-                    def.insert(dest.clone());
+            if Self::FORWARD {
+                let out_preds = pred
+                    .get(&b)
+                    .expect("b should be in pred")
+                    .iter()
+                    .map(|s| out.get(*s).expect("s should be in out"))
+                    .collect::<Vec<_>>();
+                in_[b] = Self::merge(&out_preds);
+
+                let out_b = Self::transfer(
+                    blocks.get(b).expect("b should be in blocks"),
+                    in_.get(b).expect("b should be in in_"),
+                );
+                if out[b] != out_b {
+                    worklist.extend(succ.get(&b).expect("b should be in succ"));
                 }
-                Instruction::Effect { args, .. } => {
-                    used.extend(args.iter().cloned());
+                out[b] = out_b;
+            } else {
+                let in_succs = succ
+                    .get(&b)
+                    .expect("b should be in succ")
+                    .iter()
+                    .map(|s| in_.get(*s).expect("s should be in in_"))
+                    .collect::<Vec<_>>();
+                out[b] = Self::merge(&in_succs);
+
+                let in_b = Self::transfer(
+                    blocks.get(b).expect("b should be in blocks"),
+                    out.get(b).expect("b should be in out"),
+                );
+                if in_[b] != in_b {
+                    worklist.extend(pred.get(&b).expect("b should be in pred"));
                 }
-                Instruction::Value { args, dest, .. } => {
-                    used.extend(args.iter().cloned());
-                    def.insert(dest.clone());
-                }
+                in_[b] = in_b;
             }
         }
-    }
 
-    let out_minus_def: HashSet<_> = out.difference(&def).cloned().collect();
-    used.union(&out_minus_def).cloned().collect()
+        if Self::FORWARD { out } else { in_ }
+    }
 }
 
-pub fn workman(
-    blocks: &Vec<Vec<Code>>,
-    pred: &HashMap<usize, Vec<usize>>,
-    succ: &HashMap<usize, Vec<usize>>,
-) -> Vec<Vec<String>> {
-    let mut in_: Vec<HashSet<String>> = vec![HashSet::new(); blocks.len()];
-    let mut out: Vec<HashSet<String>> = vec![HashSet::new(); blocks.len()];
-    let mut worklist: Vec<_> = (0..blocks.len()).collect();
-
-    while !worklist.is_empty() {
-        let b = worklist.pop().expect("worklist shouldn't be empty");
-
-        let in_succs = succ
-            .get(&b)
-            .expect("b should be in succ")
-            .iter()
-            .map(|s| in_.get(*s).expect("s should be in in_"))
-            .collect::<Vec<_>>();
-        out[b] = merge(&in_succs);
-
-        let in_b = transfer(
-            blocks.get(b).expect("b should be in blocks"),
-            out.get(b).expect("b should be in out"),
-        );
-        if in_[b] != in_b {
-            worklist.extend(pred.get(&b).expect("b should be in pred").iter());
-        }
-        in_[b] = in_b;
-    }
-
-    in_.into_iter().map(|v| v.into_iter().collect()).collect()
-}
+pub mod live_variables;
