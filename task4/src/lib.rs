@@ -40,12 +40,10 @@ pub fn form_cfg(
         }) = block.last().expect("block shouldn't be empty")
         {
             let target_block_ids = find_block_ids_with_labels(blocks, target_labels);
-            succ.entry(i)
-                .and_modify(|v| v.extend(&target_block_ids))
-                .or_default();
+            succ.entry(i).or_default().extend(&target_block_ids);
 
             for pred_id in target_block_ids {
-                pred.entry(pred_id).and_modify(|v| v.push(i)).or_default();
+                pred.entry(pred_id).or_default().push(i);
             }
         } else if i < blocks.len() - 1
             && !matches!(
@@ -56,8 +54,8 @@ pub fn form_cfg(
                 })
             )
         {
-            succ.insert(i, vec![i + 1]);
-            pred.insert(i + 1, vec![i]);
+            succ.entry(i).or_default().push(i + 1);
+            pred.entry(i + 1).or_default().push(i);
         }
     }
 
