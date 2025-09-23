@@ -109,7 +109,7 @@ pub trait DataFlowAnalysis {
         blocks: &Vec<Vec<Code>>,
         pred: &HashMap<usize, Vec<usize>>,
         succ: &HashMap<usize, Vec<usize>>,
-    ) -> Vec<Self::State> {
+    ) -> (Vec<Self::State>, Vec<Self::State>) {
         let mut in_: Vec<Self::State> = vec![Self::inital_state(); blocks.len()];
         let mut out: Vec<Self::State> = vec![Self::inital_state(); blocks.len()];
         let mut worklist: Vec<_> = (0..blocks.len()).collect();
@@ -154,7 +154,7 @@ pub trait DataFlowAnalysis {
             }
         }
 
-        if Self::FORWARD { out } else { in_ }
+        (in_, out)
     }
 }
 

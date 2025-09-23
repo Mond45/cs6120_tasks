@@ -8,14 +8,20 @@ fn main() {
         let fn_basic_blocks = get_basic_blocks(&function);
 
         let (pred, succ) = form_cfg(&fn_basic_blocks);
-        let block_live_vars = LiveVariables::workman(&fn_basic_blocks, &pred, &succ);
+        let (in_, out) = LiveVariables::workman(&fn_basic_blocks, &pred, &succ);
 
         println!("fn {}:", function.name);
 
-        for (i, live_vars) in block_live_vars.into_iter().enumerate() {
-            let mut live_vars: Vec<_> = live_vars.into_iter().collect();
-            live_vars.sort();
-            println!("{i} -> {}", live_vars.join(", "));
+        for (i, (b_in, b_out)) in in_.into_iter().zip(out.into_iter()).enumerate() {
+            let mut b_in: Vec<_> = b_in.into_iter().collect();
+            let mut b_out: Vec<_> = b_out.into_iter().collect();
+            b_in.sort();
+            b_out.sort();
+            println!(
+                "{i}\n\tin: {}\n\tout: {}",
+                b_in.join(", "),
+                b_out.join(", ")
+            );
         }
     }
 }

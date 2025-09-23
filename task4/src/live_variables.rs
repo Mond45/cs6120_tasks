@@ -20,28 +20,26 @@ impl DataFlowAnalysis for LiveVariables {
     }
 
     fn transfer(block: &Vec<Code>, out: &Self::State) -> Self::State {
-        let mut used = HashSet::new();
-        let mut def = HashSet::new();
+        let mut in_ = out.clone();
 
-        for code in block {
+        for code in block.iter().rev() {
             if let Code::Instruction(instr) = code {
                 match instr {
                     Instruction::Constant { dest, .. } => {
-                        def.insert(dest.clone());
+                        in_.remove(dest);
                     }
                     Instruction::Effect { args, .. } => {
-                        used.extend(args.iter().cloned());
+                        in_.extend(args.iter().cloned());
                     }
                     Instruction::Value { args, dest, .. } => {
-                        used.extend(args.iter().cloned());
-                        def.insert(dest.clone());
+                        in_.remove(dest);
+                        in_.extend(args.iter().cloned());
                     }
                 }
             }
         }
 
-        let out_minus_def: HashSet<_> = out.difference(&def).cloned().collect();
-        used.union(&out_minus_def).cloned().collect()
+        in_
     }
 
     fn inital_state() -> Self::State {
