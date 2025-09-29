@@ -107,6 +107,7 @@ name = "task5"
 version = "0.1.0"
 dependencies = [
  "bril-rs",
+ "serde_json",
 ]
 
 [[package]]

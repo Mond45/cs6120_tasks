@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 bril-rs = { git = "https://github.com/sampsyo/bril", version = "0.1.0", features = ["bitcast", "char", "dynamic", "float", "import", "memory", "position", "speculate", "ssa"] }
+serde_json = "1.0.145"
