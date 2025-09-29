@@ -2,6 +2,7 @@
 name = "task5"
 version = "0.1.0"
 edition = "2024"
+default-run = "task5"
 
 [dependencies]
 bril-rs = { git = "https://github.com/sampsyo/bril", version = "0.1.0", features = ["bitcast", "char", "dynamic", "float", "import", "memory", "position", "speculate", "ssa"] }

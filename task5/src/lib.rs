@@ -3,13 +3,18 @@ use std::collections::HashSet;
 use bril_rs::{Code, EffectOps, Function, Instruction};
 
 pub fn get_label(blocks: &Vec<Vec<Code>>, idx: usize) -> String {
-    if idx == 0 {
-        "entry".to_string()
-    } else {
-        match blocks[idx].first().expect("block shouldn't be empty") {
-            Code::Label { label, .. } => label.clone(),
-            Code::Instruction(instr) => instr.to_string(),
-        }
+    if idx == 0
+        && !matches!(
+            blocks[idx].first().expect("block shouldn't be empty"),
+            Code::Label { .. }
+        )
+    {
+        return "entry".to_string();
+    }
+
+    match blocks[idx].first().expect("block shouldn't be empty") {
+        Code::Label { label, .. } => label.clone(),
+        Code::Instruction(instr) => instr.to_string(),
     }
 }
 
@@ -30,8 +35,7 @@ fn find_block_ids_with_labels(blocks: &Vec<Vec<Code>>, labels: &Vec<String>) -> 
         .collect()
 }
 
-pub fn form_cfg(blocks: &Vec<Vec<Code>>) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
-    let mut pred: Vec<Vec<usize>> = vec![vec![]; blocks.len()];
+pub fn form_cfg(blocks: &Vec<Vec<Code>>) -> Vec<Vec<usize>> {
     let mut succ: Vec<Vec<usize>> = vec![vec![]; blocks.len()];
 
     for (i, block) in blocks.iter().enumerate() {
@@ -43,10 +47,6 @@ pub fn form_cfg(blocks: &Vec<Vec<Code>>) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
         {
             let target_block_ids = find_block_ids_with_labels(blocks, target_labels);
             succ[i].extend(&target_block_ids);
-
-            for pred_id in target_block_ids {
-                pred[pred_id].push(i);
-            }
         } else if i < blocks.len() - 1
             && !matches!(
                 block.last().expect("block shouldn't be empty"),
@@ -57,11 +57,10 @@ pub fn form_cfg(blocks: &Vec<Vec<Code>>) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
             )
         {
             succ[i].push(i + 1);
-            pred[i + 1].push(i);
         }
     }
 
-    (pred, succ)
+    succ
 }
 
 pub fn get_basic_blocks(function: &Function) -> Vec<Vec<Code>> {
@@ -147,4 +146,19 @@ pub fn find_dominators(preds: &Vec<Vec<usize>>, succs: &Vec<Vec<usize>>) -> Vec<
     }
 
     dom
+}
+
+pub fn rev_graph(graph: &Vec<Vec<usize>>) -> Vec<Vec<usize>> {
+    let mut output = vec![HashSet::new(); graph.len()];
+
+    for (from, tos) in graph.iter().enumerate() {
+        for &to in tos {
+            output[to].insert(from);
+        }
+    }
+
+    output
+        .into_iter()
+        .map(|v| v.into_iter().collect())
+        .collect()
 }

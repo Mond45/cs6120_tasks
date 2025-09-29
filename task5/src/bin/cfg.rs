@@ -6,7 +6,7 @@ fn main() {
 
     for function in program.functions {
         let blocks = get_basic_blocks(&function);
-        let (_, succ) = form_cfg(&blocks);
+        let succ = form_cfg(&blocks);
 
         println!("digraph {{");
         for (u, vs) in succ.iter().enumerate() {
