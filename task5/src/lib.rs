@@ -205,3 +205,25 @@ pub fn display_dom(blocks: &Vec<Vec<Code>>, dom: &mut Vec<Vec<usize>>) {
         );
     }
 }
+
+pub fn dom_frontier(dominators: &Vec<Vec<usize>>, preds: &Vec<Vec<usize>>) -> Vec<Vec<usize>> {
+    let n = dominators.len();
+    let mut frontier: Vec<Vec<usize>> = vec![Vec::new(); n];
+
+    let dominates: Vec<HashSet<_>> = rev_graph(&dominators)
+        .into_iter()
+        .map(|v| v.into_iter().collect::<HashSet<_>>())
+        .collect();
+
+    for a in 0..n {
+        for b in 0..n {
+            if !(a != b && dominates[a].contains(&b))
+                && preds[b].iter().any(|p| dominates[a].contains(p))
+            {
+                frontier[a].push(b);
+            }
+        }
+    }
+
+    frontier
+}
