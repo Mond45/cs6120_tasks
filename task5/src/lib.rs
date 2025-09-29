@@ -107,7 +107,7 @@ fn postorder(u: usize, graph: &Vec<Vec<usize>>, visited: &mut Vec<bool>, order: 
     order.push(u);
 }
 
-pub fn find_dominators(preds: &Vec<Vec<usize>>, succs: &Vec<Vec<usize>>) -> Vec<HashSet<usize>> {
+pub fn find_dominators(preds: &Vec<Vec<usize>>, succs: &Vec<Vec<usize>>) -> Vec<Vec<usize>> {
     let mut dom: Vec<HashSet<usize>> = vec![(0..preds.len()).collect(); preds.len()];
     dom[0] = [0].into();
 
@@ -145,7 +145,7 @@ pub fn find_dominators(preds: &Vec<Vec<usize>>, succs: &Vec<Vec<usize>>) -> Vec<
         }
     }
 
-    dom
+    dom.into_iter().map(|d| d.into_iter().collect()).collect()
 }
 
 pub fn rev_graph(graph: &Vec<Vec<usize>>) -> Vec<Vec<usize>> {
@@ -161,4 +161,47 @@ pub fn rev_graph(graph: &Vec<Vec<usize>>) -> Vec<Vec<usize>> {
         .into_iter()
         .map(|v| v.into_iter().collect())
         .collect()
+}
+
+pub fn form_dom_tree(dominators: &Vec<Vec<usize>>) -> Vec<Vec<usize>> {
+    let dominates: Vec<HashSet<_>> = rev_graph(&dominators)
+        .into_iter()
+        .map(|v| v.into_iter().collect::<HashSet<_>>())
+        .collect();
+
+    let n = dominators.len();
+
+    let mut dom_tree: Vec<Vec<usize>> = vec![Vec::new(); n];
+    for a in 0..n {
+        for b in 0..n {
+            if a != b
+                && dominates[a].contains(&b)
+                && (0..n).into_iter().all(|c| {
+                    if a == c || b == c {
+                        true
+                    } else {
+                        !(dominates[a].contains(&c) && dominates[c].contains(&b))
+                    }
+                })
+            {
+                dom_tree[a].push(b);
+            }
+        }
+        dom_tree[a].sort();
+    }
+
+    dom_tree
+}
+
+pub fn display_dom(blocks: &Vec<Vec<Code>>, dom: &mut Vec<Vec<usize>>) {
+    for (i, d) in dom.iter_mut().enumerate() {
+        d.sort();
+        println!(
+            "{i}: {} {:?}",
+            get_label(&blocks, i),
+            d.iter()
+                .map(|idx| { format!("{idx}: {}", get_label(&blocks, *idx)) })
+                .collect::<Vec<_>>()
+        );
+    }
 }
