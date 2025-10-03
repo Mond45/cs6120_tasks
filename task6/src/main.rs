@@ -23,7 +23,7 @@ fn main() {
         let df = dom_frontier(&dom, &pred);
 
         let defs = get_defs(&blocks);
-        let blocks_phi_nodes = place_phi_nodes(&defs, &df, &pred);
+        let blocks_phi_nodes = place_phi_nodes(&blocks, &defs, &df, &pred, &succ);
 
         for (block, phi_nodes) in blocks_phi_nodes.iter().enumerate() {
             println!("Block: {}", get_label(&blocks, block));
