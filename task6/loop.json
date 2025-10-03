@@ -1,0 +1,42 @@
+{
+  "functions": [
+    {
+      "instrs": [
+        {
+          "label": "entry"
+        },
+        {
+          "dest": "v",
+          "op": "const",
+          "type": "int",
+          "value": 0
+        },
+        {
+          "dest": "one",
+          "op": "const",
+          "type": "int",
+          "value": 1
+        },
+        {
+          "label": "loop"
+        },
+        {
+          "args": [
+            "v",
+            "one"
+          ],
+          "dest": "v",
+          "op": "add",
+          "type": "int"
+        },
+        {
+          "labels": [
+            "loop"
+          ],
+          "op": "jmp"
+        }
+      ],
+      "name": "main"
+    }
+  ]
+}
