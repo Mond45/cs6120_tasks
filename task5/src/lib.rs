@@ -140,7 +140,7 @@ pub fn find_dominators(preds: &Vec<Vec<usize>>, succs: &Vec<Vec<usize>>) -> Vec<
                 });
             new_dom.insert(*v);
 
-            changing |= dom.get(*v).unwrap() == &new_dom;
+            changing |= dom.get(*v).unwrap() != &new_dom;
             dom[*v] = new_dom;
         }
     }
