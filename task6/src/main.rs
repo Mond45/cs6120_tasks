@@ -1,6 +1,7 @@
-use std::fs::File;
+// use std::fs::File;
 
-use bril_rs::{load_program, load_program_from_read};
+use bril_rs::load_program;
+// use bril_rs::load_program_from_read;
 use task6::{
     cfg::{form_cfg, get_basic_blocks, get_label},
     dom::{dom_frontier, find_dominators, rev_graph},
@@ -8,8 +9,8 @@ use task6::{
 };
 
 fn main() {
-    // let program = load_program();
-    let program = load_program_from_read(File::open("loop.json").unwrap());
+    let program = load_program();
+    // let program = load_program_from_read(File::open("loop.json").unwrap());
 
     for function in program.functions {
         println!("==== Function: {} ====", function.name);
