@@ -26,14 +26,24 @@ fn main() {
 
         for code in function.instrs.iter() {
             match code {
-                Code::Instruction(Instruction::Value { op, .. }) if *op == ValueOps::Get => {}
+                Code::Instruction(Instruction::Value { op, dest, .. }) if *op == ValueOps::Get => {
+                    instrs.push(Code::Instruction(Instruction::Value {
+                        args: vec![format!("__shadow_{dest}")],
+                        dest: dest.clone(),
+                        funcs: vec![],
+                        labels: vec![],
+                        op: ValueOps::Id,
+                        pos: None,
+                        op_type: types[dest].clone(),
+                    }))
+                }
                 Code::Instruction(Instruction::Effect { op, args, .. })
                     if *op == EffectOps::Set =>
                 {
                     if let [dest, src] = args.as_slice() {
                         instrs.push(Code::Instruction(Instruction::Value {
                             args: vec![src.clone()],
-                            dest: dest.clone(),
+                            dest: format!("__shadow_{dest}"),
                             funcs: vec![],
                             labels: vec![],
                             op: ValueOps::Id,
