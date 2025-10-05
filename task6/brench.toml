@@ -10,6 +10,14 @@ pipeline = [
 [runs.ssa]
 pipeline = [
     "bril2json",
-    "cargo run --bin task6",
+    "cargo run -q --release --bin to_ssa",
+    "brili -p {args}",
+]
+
+[runs.ssa_roundtrip]
+pipeline = [
+    "bril2json",
+    "cargo run -q --release --bin to_ssa",
+    "cargo run -q --release --bin from_ssa",
     "brili -p {args}",
 ]
