@@ -1,16 +1,16 @@
 use bril_rs::{Code, EffectOps, Function, Instruction};
 
-pub fn get_label(blocks: &Vec<Vec<Code>>, idx: usize) -> String {
-    if idx == 0
+pub fn get_label(blocks: &Vec<Vec<Code>>, id: usize) -> String {
+    if id == 0
         && !matches!(
-            blocks[idx].first().expect("block shouldn't be empty"),
+            blocks[id].first().expect("block shouldn't be empty"),
             Code::Label { .. }
         )
     {
         return "entry".to_string();
     }
 
-    match blocks[idx].first().expect("block shouldn't be empty") {
+    match blocks[id].first().expect("block shouldn't be empty") {
         Code::Label { label, .. } => label.clone(),
         Code::Instruction(instr) => instr.to_string(),
     }

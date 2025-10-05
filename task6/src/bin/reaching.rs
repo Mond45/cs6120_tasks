@@ -4,13 +4,13 @@ use bril_rs::load_program;
 // use bril_rs::load_program_from_read;
 use task6::{
     cfg::{form_cfg, get_basic_blocks, get_label},
-    df::{DataFlowAnalysis, ReachingDefs},
+    df::ReachingDefs,
     dom::rev_graph,
 };
 
 fn main() {
     let program = load_program();
-    // let program = load_program_from_read(File::open("loop.json").unwrap());
+    // let program = load_program_from_read(File::open("argwrite.json").unwrap());
 
     for function in program.functions {
         println!("==== Function: {} ====", function.name);
