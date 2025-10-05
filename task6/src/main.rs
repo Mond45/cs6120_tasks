@@ -1,10 +1,6 @@
-// use std::fs::File;
-
 use std::{collections::HashMap, env::args};
 
-// use bril_rs::load_program_from_read;
-use bril_rs::{Code, Instruction, ValueOps, load_program, output_program};
-use task6::ssa::get_vars;
+use bril_rs::{Code, load_program, output_program};
 use task6::{
     cfg::{form_cfg, get_basic_blocks, get_label},
     dom::{dom_frontier, find_dominators, form_dom_tree, rev_graph},
@@ -42,28 +38,18 @@ fn main() {
     for function in program.functions.iter_mut() {
         let mut stack: HashMap<String, Vec<String>> = HashMap::new();
 
+        function.instrs.insert(
+            0,
+            Code::Label {
+                label: "__prelude__".to_string(),
+                pos: None,
+            },
+        );
         for arg in &function.args {
             stack
                 .entry(arg.name.clone())
                 .or_default()
                 .push(arg.name.clone());
-        }
-
-        let vars = get_vars(&function.instrs);
-        for (var, var_type) in vars {
-            function.instrs.insert(
-                0,
-                Code::Instruction(Instruction::Value {
-                    args: vec![],
-                    dest: var.clone(),
-                    funcs: vec![],
-                    labels: vec![],
-                    op: ValueOps::Undef,
-                    pos: None,
-                    op_type: var_type,
-                }),
-            );
-            stack.entry(var.clone()).or_default().push(var);
         }
 
         let mut blocks = get_basic_blocks(&function);
@@ -107,12 +93,6 @@ fn main() {
             &mut stack,
             &succ,
         );
-
-        if debug {
-            eprintln!("Renamed phi nodes:");
-            display_phi_nodes(&blocks, &phi_nodes);
-            eprintln!();
-        }
 
         function.instrs = flatten(blocks);
     }

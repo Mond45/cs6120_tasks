@@ -35,28 +35,6 @@ pub fn get_defs(blocks: &Vec<Vec<Code>>) -> HashMap<String, (HashSet<usize>, Typ
     defs
 }
 
-pub fn get_vars(instrs: &Vec<Code>) -> HashSet<(String, Type)> {
-    let mut vars = HashSet::new();
-    for code in instrs {
-        if let Code::Instruction(
-            Instruction::Constant {
-                dest,
-                const_type: var_type,
-                ..
-            }
-            | Instruction::Value {
-                dest,
-                op_type: var_type,
-                ..
-            },
-        ) = code
-        {
-            vars.insert((dest.clone(), var_type.clone()));
-        }
-    }
-    vars
-}
-
 // block -> var -> type
 pub type PhiNodes = Vec<HashMap<String, (Type, bool)>>;
 
@@ -155,7 +133,7 @@ pub fn ssa_rename(
                     *dest = phi_node_dests[&(block, old_name.clone())].clone();
                     stack.entry(old_name).or_default().push(dest.clone());
                 }
-                Instruction::Effect { args, .. } => {
+                Instruction::Effect { args, op, .. } if *op != EffectOps::Set => {
                     for arg in args.iter_mut() {
                         *arg = stack
                             .get(&arg.clone())
@@ -192,27 +170,64 @@ pub fn ssa_rename(
                     }
                     _ => true,
                 })
-                .expect("there should be an instruction that isn't jmp, br, ret in the block")
-                + 1;
+                .map_or(0, |v| v + 1);
 
-            blocks[block].insert(
-                insert_idx,
-                Code::Instruction(Instruction::Effect {
-                    args: vec![
-                        new_dest.clone(),
-                        stack
-                            .get(&dest.clone())
-                            .expect("arg should be in stack")
-                            .last()
-                            .expect("stack shouldn't be empty")
-                            .clone(),
+            let cloned_dest = dest.clone();
+            if !stack.contains_key(&cloned_dest) || stack.get(&cloned_dest).unwrap().is_empty() {
+                let new_name = renamer.get_name(&cloned_dest);
+                stack
+                    .entry(dest.clone())
+                    .or_default()
+                    .push(new_name.clone());
+                blocks[block].splice(
+                    insert_idx..insert_idx,
+                    [
+                        Code::Instruction(Instruction::Value {
+                            args: vec![],
+                            dest: new_name,
+                            funcs: vec![],
+                            labels: vec![],
+                            op: ValueOps::Undef,
+                            pos: None,
+                            op_type: var_type.clone(),
+                        }),
+                        Code::Instruction(Instruction::Effect {
+                            args: vec![
+                                new_dest.clone(),
+                                stack
+                                    .get(&cloned_dest)
+                                    .expect("arg should be in stack")
+                                    .last()
+                                    .expect("stack shouldn't be empty")
+                                    .clone(),
+                            ],
+                            funcs: vec![],
+                            labels: vec![],
+                            op: EffectOps::Set,
+                            pos: None,
+                        }),
                     ],
-                    funcs: vec![],
-                    labels: vec![],
-                    op: EffectOps::Set,
-                    pos: None,
-                }),
-            );
+                );
+            } else {
+                blocks[block].insert(
+                    insert_idx,
+                    Code::Instruction(Instruction::Effect {
+                        args: vec![
+                            new_dest.clone(),
+                            stack
+                                .get(&cloned_dest)
+                                .expect("arg should be in stack")
+                                .last()
+                                .expect("stack shouldn't be empty")
+                                .clone(),
+                        ],
+                        funcs: vec![],
+                        labels: vec![],
+                        op: EffectOps::Set,
+                        pos: None,
+                    }),
+                );
+            }
 
             // place `get` in the successor
             if !*inserted {
@@ -221,7 +236,7 @@ pub fn ssa_rename(
                 let insert_idx = blocks[succ]
                     .iter()
                     .position(|code| !matches!(code, Code::Label { .. }))
-                    .expect("there should be a non-label instruction in the block");
+                    .unwrap_or(1);
                 blocks[succ].insert(
                     insert_idx,
                     Code::Instruction(Instruction::Value {

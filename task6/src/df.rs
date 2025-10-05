@@ -39,14 +39,6 @@ impl ReachingDefs {
 
         let defs = get_defs(&block);
 
-        // TODO: find way to deal with arguments
-        //
-        // if block_id == 0 {
-        //     for arg in args {
-        //         defs.push(arg.name.clone());
-        //     }
-        // }
-
         // in - kill
         // remove previous definitions that are overwritten in the current block (killed)
         out.retain(|var, _| !defs.contains(var));
